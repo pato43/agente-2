@@ -11,23 +11,30 @@ st.set_page_config(page_title="FinSecure Hub", layout="wide")
 # ---------------- HEADER ----------------
 st.title("💳 FinSecure Hub — Plataforma Integral de Fraudes y Clientes")
 st.markdown("""
-Bienvenido a **FinSecure Hub**, una demo integral para el sector **banca y fintech en México**.  
-Incluye **detección de fraudes, análisis de clientes, ML no-code, dashboards, mapas,
-reportes y herramientas internas**, con tecnologías de última generación.
+**FinSecure Hub** es una demo integral para **banca y fintech en México**.  
+Ofrece **detección de fraudes, análisis de clientes, ML no-code, dashboards, mapas, reportes e integraciones externas**.  
 """)
 
 # ---------------- STACK TECNOLÓGICO ----------------
 st.markdown("### ⚙️ Stack Tecnológico")
-cols = st.columns(7)
+
 techs = [
     ("Gemma3","https://ai.google.dev/static/gemma/images/gemma3.png?hl=es-419"),
+    ("Google Gemini","https://seeklogo.com/images/G/google-gemini-logo-CC90F10B3E-seeklogo.com.png"),
     ("LangChain","https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/logos/langchain-ipuhh4qo1jz5ssl4x0g2a.png/langchain-dp1uxj2zn3752pntqnpfu2.png?_a=DATAg1AAZAA0"),
-    ("OpenRouter","https://avatars.githubusercontent.com/u/139895814?s=200&v=4"),
+    ("OpenRouter","https://openrouter.ai/logo.png"),
+    ("HuggingFace","https://huggingface.co/front/assets/huggingface_logo-noborder.svg"),
+    ("TensorFlow","https://upload.wikimedia.org/wikipedia/commons/2/2d/Tensorflow_logo.svg"),
+    ("PyTorch","https://upload.wikimedia.org/wikipedia/commons/9/96/PyTorch_logo_icon.svg"),
     ("Google Sheets","https://mailmeteor.com/logos/assets/PNG/Google_Sheets_Logo_512px.png"),
+    ("Power BI","https://upload.wikimedia.org/wikipedia/commons/c/cf/New_Power_BI_Logo.svg"),
     ("SQL Server","https://cdn-icons-png.flaticon.com/512/5968/5968364.png"),
     ("PostgreSQL","https://upload.wikimedia.org/wikipedia/commons/a/ad/Logo_PostgreSQL.png"),
+    ("BigQuery","https://upload.wikimedia.org/wikipedia/commons/4/4e/Google_BigQuery_Logo.png"),
     ("Azure Cloud","https://swimburger.net/media/ppnn3pcl/azure.png")
 ]
+
+cols = st.columns(len(techs))
 for (name,url),col in zip(techs,cols):
     col.image(url,caption=name,use_container_width=True)
 
@@ -39,7 +46,7 @@ k1,k2,k3,k4 = st.columns(4)
 k1.metric("Fraudes hoy", random.randint(10,30), delta="+3")
 k2.metric("Monto recuperado", f"${random.randint(20000,100000)}")
 k3.metric("Clientes en riesgo", random.randint(20,50), delta="-4")
-k4.metric("Tiempo medio detección", f"{random.randint(2,9)} min")
+k4.metric("Tiempo detección", f"{random.randint(2,9)} min")
 
 data = pd.DataFrame({
     "Fecha": pd.date_range(datetime.today()-timedelta(days=30), periods=30),
@@ -52,119 +59,114 @@ st.write("---")
 
 # ---------------- DETECCIÓN FRAUDES ----------------
 st.subheader("🔎 Detección de Fraudes en Tiempo Real")
-if st.button("Consultar base de datos"):
-    with st.spinner("Gemma3 analizando registros..."):
-        time.sleep(3)
-    df = pd.DataFrame({
-        "Usuario":[f"U{1000+i}" for i in range(60)],
-        "Monto": np.random.randint(100,10000,60),
-        "Hora":[f"{random.randint(0,23)}:{random.randint(0,59):02d}" for _ in range(60)],
-        "Ciudad":np.random.choice(["CDMX","Guadalajara","Monterrey","Cancún","Tijuana"],60),
-        "Fraude sospechoso":np.random.choice([True,False],60,p=[0.3,0.7])
+colA,colB = st.columns(2)
+with colA:
+    if st.button("Consultar base de datos"):
+        with st.spinner("Gemma3 analizando registros..."):
+            time.sleep(2)
+        df = pd.DataFrame({
+            "Usuario":[f"U{1000+i}" for i in range(60)],
+            "Monto": np.random.randint(100,10000,60),
+            "Ciudad":np.random.choice(["CDMX","GDL","MTY","Cancún","Tijuana"],60),
+            "Fraude sospechoso":np.random.choice([True,False],60,p=[0.3,0.7])
+        })
+        st.dataframe(df, use_container_width=True, hide_index=True)
+with colB:
+    st.info("⚠️ Fraudes resaltados")
+    fraudes = pd.DataFrame({
+        "Usuario":[f"U{2000+i}" for i in range(8)],
+        "Monto": np.random.randint(5000,20000,8),
+        "Ciudad":np.random.choice(["CDMX","MTY"],8)
     })
-    st.dataframe(df, use_container_width=True, hide_index=True)
-    fraudes=df[df["Fraude sospechoso"]==True]
-    st.error(f"⚠️ {len(fraudes)} fraudes detectados")
-    st.dataframe(fraudes, use_container_width=True, hide_index=True)
-    st.plotly_chart(px.histogram(df, x="Ciudad", color="Fraude sospechoso", title="Distribución por ciudad"), use_container_width=True)
+    st.dataframe(fraudes,use_container_width=True,hide_index=True)
+
+st.plotly_chart(px.histogram(df, x="Ciudad", color="Fraude sospechoso", title="Distribución por ciudad"), use_container_width=True)
 
 st.write("---")
 
 # ---------------- CLIENTES ----------------
-st.subheader("🙋‍♂️ Clientes en riesgo de abandono")
-df_aband=pd.DataFrame({
-    "Cliente":[f"C{i}" for i in range(1,41)],
-    "Uso app móvil":np.random.choice(["Alto","Medio","Bajo"],40),
-    "Probabilidad abandono":np.random.rand(40).round(2)
+st.subheader("🙋‍♂️ Clientes en Riesgo")
+col1,col2=st.columns(2)
+with col1:
+    df_aband=pd.DataFrame({
+        "Cliente":[f"C{i}" for i in range(1,41)],
+        "Uso app móvil":np.random.choice(["Alto","Medio","Bajo"],40),
+        "Prob. abandono":np.random.rand(40).round(2)
+    })
+    st.dataframe(df_aband,use_container_width=True,hide_index=True)
+with col2:
+    st.plotly_chart(px.box(df_aband,x="Uso app móvil",y="Prob. abandono"),use_container_width=True)
+
+st.write("---")
+
+# ---------------- TICKETS DE SOPORTE ----------------
+st.subheader("🎟️ Tickets de soporte")
+tickets=pd.DataFrame({
+    "ID":[f"T{i}" for i in range(1,11)],
+    "Asunto":np.random.choice(["Acceso bloqueado","Tarjeta clonada","Error en app","Consulta saldo"],10),
+    "Status":np.random.choice(["Abierto","En progreso","Cerrado"],10),
+    "Asignado":np.random.choice(["Agente1","Agente2","Agente3"],10)
 })
-st.dataframe(df_aband,use_container_width=True,hide_index=True)
-st.plotly_chart(px.box(df_aband,x="Uso app móvil",y="Probabilidad abandono",title="Distribución abandono"),use_container_width=True)
+st.dataframe(tickets,use_container_width=True,hide_index=True)
 
 st.write("---")
 
-# ---------------- MODELOS ML ----------------
-st.subheader("🧠 Modelos ML")
-with st.expander("Abrir modelos disponibles"):
-    modelo=st.selectbox("Modelo",["Regresión logística","Árbol de decisión","Random Forest","KMeans","ARIMA"])
-    if st.button("Ejecutar modelo"):
-        with st.spinner("Gemma3 entrenando..."):
-            time.sleep(3)
-        if modelo=="Regresión logística":
-            st.success("Precisión: 91%")
-            st.plotly_chart(px.scatter(x=np.random.rand(60),y=np.random.rand(60),color=np.random.choice(["Fraude","No"],60)),use_container_width=True)
-        elif modelo=="Árbol de decisión":
-            st.success("Árbol entrenado, profundidad 6")
-        elif modelo=="Random Forest":
-            st.success("200 árboles entrenados")
-            st.plotly_chart(px.bar(x=["Fraude","No"],y=[random.randint(20,40),random.randint(50,80)]),use_container_width=True)
-        elif modelo=="KMeans":
-            st.success("Clustering (k=4)")
-            clusters=pd.DataFrame({"x":np.random.rand(80),"y":np.random.rand(80),"cluster":np.random.choice([1,2,3,4],80)})
-            st.plotly_chart(px.scatter(clusters,x="x",y="y",color="cluster"),use_container_width=True)
-        elif modelo=="ARIMA":
-            st.success("Pronóstico 14 días")
-            serie=pd.DataFrame({"fecha":pd.date_range(datetime.today(),periods=30),"valor":np.random.randint(100,500,30)})
-            st.plotly_chart(px.line(serie,x="fecha",y="valor"),use_container_width=True)
+# ---------------- ALERTAS INTERACTIVAS ----------------
+st.subheader("🚨 Alertas dinámicas")
+alertas=["Múltiples accesos sospechosos","Intentos de retiro en cajeros","Compra internacional","Transferencia inusual"]
+colX,colY=st.columns(2)
+with colX:
+    alerta_sel=st.selectbox("Selecciona alerta",alertas)
+    if st.button("Generar alerta"):
+        st.error(f"⚠️ {alerta_sel} detectada")
+with colY:
+    st.success("Última alerta gestionada con éxito")
 
 st.write("---")
 
-# ---------------- MAPA ----------------
-st.subheader("🌍 Hotspots de Fraude")
-df_map=pd.DataFrame({
-    "lat":[19.43,20.67,25.67,21.16,32.52],
-    "lon":[-99.13,-103.35,-100.31,-86.85,-117.03],
-    "Ciudad":["CDMX","Guadalajara","Monterrey","Cancún","Tijuana"],
-    "Fraudes":np.random.randint(5,30,5)
+# ---------------- PANEL FINANCIERO ----------------
+st.subheader("💰 Panel financiero")
+fin=pd.DataFrame({
+    "Mes":pd.date_range("2024-01-01",periods=12,freq="M"),
+    "Ingresos":np.random.randint(200000,400000,12),
+    "Gastos":np.random.randint(100000,250000,12)
 })
-st.map(df_map)
+st.plotly_chart(px.bar(fin,x="Mes",y=["Ingresos","Gastos"],barmode="group"),use_container_width=True)
 
 st.write("---")
 
-# ---------------- HERRAMIENTAS INTERNAS ----------------
-st.subheader("🗂️ Herramientas internas")
-c1,c2,c3=st.columns(3)
-with c1:
+# ---------------- BENCHMARK MODELOS ----------------
+st.subheader("📈 Benchmark Modelos ML")
+bench=pd.DataFrame({
+    "Modelo":["Reg. logística","Árbol","Random Forest","KMeans","XGBoost"],
+    "Precisión":[0.91,0.86,0.93,0.79,0.95],
+    "Tiempo (s)":[3,1,5,2,6]
+})
+st.dataframe(bench,use_container_width=True,hide_index=True)
+
+st.write("---")
+
+# ---------------- CALENDARIO Y NOTAS ----------------
+st.subheader("🗓️ Herramientas de oficina")
+colN1,colN2=st.columns(2)
+with colN1:
+    st.write("📅 Calendario")
+    events=[{"title":"Revisión diaria","start":datetime.now().strftime("%Y-%m-%d")},
+            {"title":"Auditoría semanal","start":(datetime.now()+timedelta(days=3)).strftime("%Y-%m-%d")}]
+    calendar(events=events,options={"editable":True,"selectable":True})
+with colN2:
     st.write("📝 Notas rápidas")
     nota=st.text_area("Escribe notas",height=120)
     if st.button("Guardar nota"): st.success("Nota guardada")
-with c2:
-    st.write("📂 Tareas")
-    tareas=st.multiselect("Pendientes",["Revisar alertas","Contactar cliente","Generar reporte","Auditoría"])
-    if st.button("Confirmar tareas"): st.info("Tareas confirmadas")
-with c3:
-    st.write("💬 Mensajes")
-    mensaje=st.text_input("Escribe mensaje")
-    if st.button("Enviar mensaje"): st.success("Mensaje enviado")
 
 st.write("---")
 
-# ---------------- CALENDARIO ----------------
-st.subheader("📅 Calendario de seguimiento")
-events=[{"title":"Revisión diaria","start":datetime.now().strftime("%Y-%m-%d")},
-        {"title":"Auditoría semanal","start":(datetime.now()+timedelta(days=3)).strftime("%Y-%m-%d")}]
-calendar(events=events,options={"editable":True,"selectable":True})
-
-st.write("---")
-
-# ---------------- REPORTES ----------------
-st.subheader("📑 Reportes")
-reporte=pd.DataFrame({
-    "Fecha":pd.date_range(datetime.today(),periods=7),
-    "Fraudes detectados":np.random.randint(1,20,7),
-    "Monto recuperado":np.random.randint(1000,50000,7)
+# ---------------- INTEGRACIONES EXTERNAS ----------------
+st.subheader("🔗 Integraciones")
+integraciones=pd.DataFrame({
+    "Servicio":["API Sandbox","CRM","Webhook","DataLake"],
+    "Estado":np.random.choice(["Conectado","Pendiente"],4)
 })
-st.dataframe(reporte,use_container_width=True,hide_index=True)
-st.download_button("📥 Descargar CSV",reporte.to_csv(index=False).encode("utf-8"),"reporte.csv")
+st.table(integraciones)
 
-st.write("---")
-
-# ---------------- AUDITORÍA ----------------
-st.subheader("🧾 Auditoría interna")
-aud=pd.DataFrame({
-    "Revisión":["Logs","Accesos","Base de datos","API externa"],
-    "Estado":np.random.choice(["Correcto","Pendiente","Falla"],4)
-})
-st.table(aud)
-
-st.markdown("---")
-st.caption("FinSecure Hub — Demo integral para banca y fintech, menos de 500 líneas.")
+st.caption("FinSecure Hub — Demo integral horizontal, logos uniformes, cargado de contenido.")
